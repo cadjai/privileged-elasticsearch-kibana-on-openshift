@@ -8,12 +8,11 @@ objects:
   kind: ImageStream
   metadata:
     annotations:
-      openshift.io/image.dockerRepositoryCheck: 2018-03-20T02:06:14Z
     creationTimestamp: null
     generation: 1
     labels:
-      app: elasticsearch
-    name: elasticsearch
+      app: ${APPLICATION}
+    name: ${APPLICATION}
   spec:
     lookupPolicy:
       local: false
@@ -21,10 +20,10 @@ objects:
     - annotations: null
       from:
         kind: DockerImage
-        name: docker-registry.default.svc:5000/es-kafka/elasticsearch:latest
+        name: docker-registry.default.svc:5000/${NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}
       generation: 1
       importPolicy: {}
-      name: latest
+      name: ${IMAGE_NAME}:${IMAGE_TAG}
       referencePolicy:
         type: Source
   status:
@@ -34,8 +33,8 @@ objects:
   metadata:
     creationTimestamp: null
     labels:
-      app: elasticsearch
-    name: elasticsearch
+      app: ${APPLICATION}
+    name: ${APPLICATION}
   spec:
     ports:
     - name: port-1
@@ -47,8 +46,8 @@ objects:
       protocol: TCP
       targetPort: 9300
     selector:
-      app: elasticsearch
-      deploymentconfig: elasticsearch
+      app: ${APPLICATION}
+      deploymentconfig: ${APPLICATION}
     sessionAffinity: None
     type: ClusterIP
   status:
@@ -60,15 +59,15 @@ objects:
       openshift.io/host.generated: "true"
     creationTimestamp: null
     labels:
-      app: elasticsearch
-    name: elasticsearch
+      app: ${APPLICATION}
+    name: ${APPLICATION}
   spec:
-    host: elasticsearch-es-kafka.apps.fd51.example.opentlc.com
+    host: ${APPLICATION}-${NAMESPACE}.${APP_DOMAIN}
     port:
       targetPort: port-1
     to:
       kind: Service
-      name: elasticsearch
+      name: ${APPLICATION}
       weight: 100
     wildcardPolicy: None
   status:
@@ -77,26 +76,23 @@ objects:
       - lastTransitionTime: 2018-03-21T01:23:03Z
         status: "True"
         type: Admitted
-      host: elasticsearch-es-kafka.apps.fd51.example.opentlc.com
+      host: ${APPLICATION}-${NAMESPACE}.${APP_DOMAIN}
       routerName: router
       wildcardPolicy: None
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
     annotations:
-      kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"v1","kind":"DeploymentConfig","metadata":{"annotations":{"openshift.io/generated-by":"OpenShiftWebConsole"},"creationTimestamp":null,"generation":1,"labels":{"app":"elasticsearch"},"name":"elasticsearch","namespace":"es-kafka"},"spec":{"replicas":1,"selector":{"app":"elasticsearch","deploymentconfig":"elasticsearch"},"strategy":{"activeDeadlineSeconds":21600,"resources":{},"rollingParams":{"intervalSeconds":1,"maxSurge":"25%","maxUnavailable":"25%","timeoutSeconds":600,"updatePeriodSeconds":1},"type":"Rolling"},"template":{"metadata":{"annotations":{"openshift.io/generated-by":"OpenShiftWebConsole"},"creationTimestamp":null,"labels":{"app":"elasticsearch","deploymentconfig":"elasticsearch"}},"spec":{"containers":[{"image":"docker.elastic.co/elasticsearch/elasticsearch@sha256:49319ae0acab8ac2092a3ea9dd17d812d68677733de47bea43c79db503135477","imagePullPolicy":"IfNotPresent","name":"elasticsearch","ports":[{"containerPort":9200,"protocol":"TCP"},{"containerPort":9300,"protocol":"TCP"}],"resources":{"limits":{"memory":"4Gi"}},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","volumeMounts":[{"mountPath":"/usr/share/elasticsearch/config/elasticsearch.yml","name":"esyamlconfigvol","subPath":"elasticsearch.yml"},{"mountPath":"/usr/share/elastisearch/temp","name":"tempdirvol"},{"mountPath":"/usr/share/elasticsearch/config/jvm.options","name":"esjvmpropsvol","subPath":"jvm.options"}]}],"dnsPolicy":"ClusterFirst","nodeSelector":{"env":"app"},"restartPolicy":"Always","schedulerName":"default-scheduler","securityContext":{"capabilities":{"add":["IPC_LOCK","SYS_RESOURCE"]},"privileged":true,"runAsUser":1000,"seLinuxOptions":{"level":"s0:c25,c10"},"supplementalGroups":[1000]},"serviceAccount":"es-sa","serviceAccountName":"es-sa","terminationGracePeriodSeconds":30,"volumes":[{"configMap":{"defaultMode":420,"name":"esyamlconfig-cm"},"name":"esyamlconfigvol"},{"emptyDir":{},"name":"tempdirvol"},{"configMap":{"defaultMode":420,"name":"esjvmoptprops-cm"},"name":"esjvmpropsvol"}]}},"test":false,"triggers":[{"type":"ConfigChange"},{"imageChangeParams":{"automatic":true,"containerNames":["elasticsearch"],"from":{"kind":"ImageStreamTag","name":"elasticsearch:5.6.8","namespace":"es-kafka"}},"type":"ImageChange"}]},"status":{"availableReplicas":0,"latestVersion":0,"observedGeneration":0,"replicas":0,"unavailableReplicas":0,"updatedReplicas":0}}
-      openshift.io/generated-by: OpenShiftWebConsole
     creationTimestamp: null
     generation: 1
     labels:
-      app: elasticsearch
-    name: elasticsearch
+      app: ${APPLICATION}
+    name: ${APPLICATION}
   spec:
     replicas: 1
     selector:
-      app: elasticsearch
-      deploymentconfig: elasticsearch
+      app: ${APPLICATION}
+      deploymentconfig: ${APPLICATION}
     strategy:
       activeDeadlineSeconds: 21600
       resources: {}
@@ -113,13 +109,13 @@ objects:
           openshift.io/generated-by: OpenShiftWebConsole
         creationTimestamp: null
         labels:
-          app: elasticsearch
-          deploymentconfig: elasticsearch
+          app: ${APPLICATION}
+          deploymentconfig: ${APPLICATION}
       spec:
         containers:
         - image: docker.elastic.co/elasticsearch/elasticsearch@sha256:49319ae0acab8ac2092a3ea9dd17d812d68677733de47bea43c79db503135477
           imagePullPolicy: IfNotPresent
-          name: elasticsearch
+          name: ${IMAGE_NAME}
           ports:
           - containerPort: 9200
             protocol: TCP
@@ -148,21 +144,21 @@ objects:
         restartPolicy: Always
         schedulerName: default-scheduler
         securityContext: {}
-        serviceAccount: es-sa
-        serviceAccountName: es-sa
+        serviceAccount: ${SERVICE_ACCOUNT}
+        serviceAccountName: ${SERVICE_ACCOUNT}
         terminationGracePeriodSeconds: 30
         volumes:
         - emptyDir: {}
           name: tempdirvol
         - configMap:
             defaultMode: 420
-            name: esjvmoptprops-cm
+            name: ${JVMCONFIGMAP}
           name: esjvmpropsvol
         - name: eslogsdir
           persistentVolumeClaim:
-            claimName: elastic-logs-nfs-pvc
+            claimName: ${LOGSPVCNAME}
         - hostPath:
-            path: /local
+            path: ${HOSTPATHNAME}
           name: esdatadir
     test: false
     triggers:
@@ -170,11 +166,11 @@ objects:
     - imageChangeParams:
         automatic: true
         containerNames:
-        - elasticsearch
+        - ${IMAGE_NAME}
         from:
           kind: ImageStreamTag
-          name: elasticsearch:latest
-          namespace: es-kafka
+          name: ${IMAGE_NAME}:${IMAGE_TAG}
+          namespace: ${NAMESPACE}
       type: ImageChange
   status:
     availableReplicas: 0
@@ -183,3 +179,32 @@ objects:
     replicas: 0
     unavailableReplicas: 0
     updatedReplicas: 0
+parameters:
+  - name: SERVICE_ACCOUNT
+    description: Name of service account that is able to run pods as root and use HostPath volumes for the Elastic Search application.
+    required: true
+    value: es-sa
+  - name: NAMESPACE
+    description: Name of namespace where the application runs
+    required: false
+    value: es-kafka
+  - name: APPLICATION
+    description: Name of deployed Elastic Search application.
+    required: false
+    value: elasticsearch
+  - name: APP_DOMAIN
+    description: Name of application domain with the OCP cluster this is being deployed to.
+    required: true
+    value: apps.fd51.example.opentlc.com
+  - name: JVMCONFIGMAP
+    description: Name of jvm properties ConfigMap with JVM optons to overwrite defaults.
+    required: false
+    value: esjvmoptprops-cm
+  - name: LOGSPVCNAME
+    description: Name of logging PVC.
+    required: false
+    value: elastic-logs-nfs-pvc
+  - name: HOSTPATHNAME
+    description: Name of host path directory .
+    required: false
+    value: /local

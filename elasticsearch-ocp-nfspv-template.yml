@@ -8,13 +8,11 @@ objects:
   kind: PersistentVolume
   metadata:
     annotations:
-      kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"v1","kind":"PersistentVolume","metadata":{"annotations":{},"name":"elastic-conf-nfs-pv","namespace":""},"spec":{"accessModes":["ReadWriteMany"],"capacity":{"storage":"2Gi"},"nfs":{"path":"/exports/elastic-conf","readOnly":false,"server":"support1.fd51.internal"},"persistentVolumeReclaimPolicy":"Retain"}}
       pv.kubernetes.io/bound-by-controller: "yes"
     creationTimestamp: null
     labels:
-      app: elasticsearch
-    name: elastic-conf-nfs-pv
+      app: ${APPLICATION}
+    name: ${CONFPVNAME}
   spec:
     accessModes:
     - ReadWriteMany
@@ -23,26 +21,22 @@ objects:
     claimRef:
       apiVersion: v1
       kind: PersistentVolumeClaim
-      name: elastic-conf-nfs-pvc
-      namespace: es-kafka
-      resourceVersion: "123615"
-      uid: 48c3c128-2737-11e8-8291-0adb60544af0
+      name: ${CONFPVCNAME}
+      namespace: ${NAMESPACE}
     nfs:
-      path: /exports/elastic-conf
-      server: support1.fd51.internal
+      path: ${CONFNFSVOLNAME}
+      server: ${NFSSERVER}
     persistentVolumeReclaimPolicy: Retain
   status: {}
 - apiVersion: v1
   kind: PersistentVolume
   metadata:
     annotations:
-      kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"v1","kind":"PersistentVolume","metadata":{"annotations":{},"name":"elastic-data-nfs-pv","namespace":""},"spec":{"accessModes":["ReadWriteMany"],"capacity":{"storage":"6Gi"},"nfs":{"path":"/exports/elastic-data","readOnly":false,"server":"support1.fd51.internal"},"persistentVolumeReclaimPolicy":"Retain"}}
       pv.kubernetes.io/bound-by-controller: "yes"
     creationTimestamp: null
     labels:
-      app: elasticsearch
-    name: elastic-data-nfs-pv
+      app: ${APPLICATION}
+    name: ${DATAPVNAME}
   spec:
     accessModes:
     - ReadWriteMany
@@ -51,13 +45,35 @@ objects:
     claimRef:
       apiVersion: v1
       kind: PersistentVolumeClaim
-      name: elastic-data-nfs-pvc
-      namespace: es-kafka
-      resourceVersion: "123574"
-      uid: 414f950e-2737-11e8-8291-0adb60544af0
+      name: ${DATAPVCNAME}
+      namespace: ${NAMESPACE}
     nfs:
-      path: /exports/elastic-data
-      server: support1.fd51.internal
+      path: ${DATANFSVOLNAME}
+      server: ${NFSSERVER}
+    persistentVolumeReclaimPolicy: Retain
+  status: {}
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    annotations:
+      pv.kubernetes.io/bound-by-controller: "yes"
+    creationTimestamp: null
+    labels:
+      app: ${APPLICATION}
+    name: ${LOGSPVNAME}
+  spec:
+    accessModes:
+    - ReadWriteMany
+    capacity:
+      storage: 6Gi
+    claimRef:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      name: ${LOGSPVCNAME}
+      namespace: ${NAMESPACE}
+    nfs:
+      path: ${LOGSNFSVOLNAME}
+      server: ${NFSSERVER}
     persistentVolumeReclaimPolicy: Retain
   status: {}
 - apiVersion: v1
@@ -68,15 +84,15 @@ objects:
       pv.kubernetes.io/bound-by-controller: "yes"
     creationTimestamp: null
     labels:
-      app: elasticsearch
-    name: elastic-data-nfs-pvc
+      app: ${APPLICATION}
+    name: ${DATAPVCNAME}
   spec:
     accessModes:
     - ReadWriteMany
     resources:
       requests:
         storage: 6Gi
-    volumeName: elastic-data-nfs-pv
+    volumeName: ${DATAPVNAME}
   status: {}
 - apiVersion: v1
   kind: PersistentVolumeClaim
@@ -86,13 +102,80 @@ objects:
       pv.kubernetes.io/bound-by-controller: "yes"
     creationTimestamp: null
     labels:
-      app: elasticsearch
-    name: elastic-logs-nfs-pvc
+      app: ${APPLICATION}
+    name: ${CONFPVCNAME}
   spec:
     accessModes:
     - ReadWriteMany
     resources:
       requests:
         storage: 3Gi
-    volumeName: elastic-logs-nfs-pv
+    volumeName: ${CONFPVNAME}
   status: {}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    annotations:
+      pv.kubernetes.io/bind-completed: "yes"
+      pv.kubernetes.io/bound-by-controller: "yes"
+    creationTimestamp: null
+    labels:
+      app: ${APPLICATION}
+    name: ${LOGSPVCNAME}
+  spec:
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: 3Gi
+    volumeName: ${LOGSPVNAME}
+  status: {}
+parameters:
+  - name: NAMESPACE
+    description: Name of namespace where the application runs
+    required: false
+    value: es-kafka
+  - name: APPLICATION
+    description: Name of deployed Elastic Search application.
+    required: false
+    value: elasticsearch
+  - name: NFSSERVER
+    description: Name of nfs server providing persistent storage.
+    required: false
+    value: support1.fd51.internal
+  - name: CONFNFSVOLNAME
+    description: Name of NFS vol to support this pv.
+    required: false
+    value: /exports/elastic-conf
+  - name: CONFPVNAME
+    description: Name of deployed Elastic Search application.
+    required: false
+    value: elastic-conf-nfs-pv
+  - name: CONFPVCNAME
+    description: Name of deployed Elastic Search application.
+    required: false
+    value: elastic-conf-nfs-pvc
+  - name: DATANFSVOLNAME
+    description: Name of NFS vol to support this pv.
+    required: false
+    value: /exports/elastic-data
+  - name: DATAPVNAME
+    description: Name of deployed Elastic Search application.
+    required: false
+    value: elastic-data-nfs-pv
+  - name: DATAPVCNAME
+    description: Name of deployed Elastic Search application.
+    required: false
+    value: elastic-data-nfs-pvc
+  - name: LOGSNFSVOLNAME
+    description: Name of NFS vol to support this pv.
+    required: false
+    value: /exports/elastic-logs
+  - name: LOGSPVNAME
+    description: Name of deployed Elastic Search application.
+    required: false
+    value: elastic-logs-nfs-pv
+  - name: LOGSPVCNAME
+    description: Name of deployed Elastic Search application.
+    required: false
+    value: elastic-logs-nfs-pvc

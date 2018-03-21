@@ -12,8 +12,8 @@ objects:
     creationTimestamp: null
     generation: 1
     labels:
-      app: kibana
-    name: kibana
+      app: ${APPLICATION}
+    name: ${APPLICATION}
   spec:
     lookupPolicy:
       local: false
@@ -21,10 +21,10 @@ objects:
     - annotations: null
       from:
         kind: DockerImage
-        name: docker-registry.default.svc:5000/es-kafka/kibana:5.6.8
+        name: docker-registry.default.svc:5000/${NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}
       generation: 1
       importPolicy: {}
-      name: 5.6.8
+      name: ${IMAGE_NAME}:${IMAGE_TAG}
       referencePolicy:
         type: Source
   status:
@@ -34,16 +34,16 @@ objects:
   metadata:
     creationTimestamp: null
     labels:
-      app: kibana
-    name: kibana
+      app: ${APPLICATION}
+    name: ${APPLICATION}
   spec:
     ports:
     - port: 5601
       protocol: TCP
       targetPort: 5601
     selector:
-      app: kibana
-      deploymentconfig: kibana
+      app: ${APPLICATION}
+      deploymentconfig: ${APPLICATION}
     sessionAffinity: None
     type: ClusterIP
   status:
@@ -55,13 +55,13 @@ objects:
       openshift.io/host.generated: "true"
     creationTimestamp: null
     labels:
-      app: kibana
-    name: kibana
+      app: ${APPLICATION}
+    name: ${APPLICATION}
   spec:
-    host: kibana-es-kafka.apps.fd51.example.opentlc.com
+    host: ${APPLICATION}-${NAMESPACE}.${APP_DOMAIN}
     to:
       kind: Service
-      name: kibana
+      name: ${APPLICATION}
       weight: 100
     wildcardPolicy: None
   status:
@@ -70,7 +70,7 @@ objects:
       - lastTransitionTime: 2018-03-21T01:23:20Z
         status: "True"
         type: Admitted
-      host: kibana-es-kafka.apps.fd51.example.opentlc.com
+      host: ${APPLICATION}-${NAMESPACE}.${APP_DOMAIN}
       routerName: router
       wildcardPolicy: None
 - apiVersion: v1
@@ -81,13 +81,13 @@ objects:
     creationTimestamp: null
     generation: 1
     labels:
-      app: kibana
-    name: kibana
+      app: ${APPLICATION}
+    name: ${APPLICATION}
   spec:
     replicas: 1
     selector:
-      app: kibana
-      deploymentconfig: kibana
+      app: ${APPLICATION}
+      deploymentconfig: ${APPLICATION}
     strategy:
       activeDeadlineSeconds: 21600
       resources: {}
@@ -104,13 +104,15 @@ objects:
           openshift.io/generated-by: OpenShiftWebConsole
         creationTimestamp: null
         labels:
-          app: kibana
-          deploymentconfig: kibana
+          app: ${APPLICATION}
+          deploymentconfig: ${APPLICATION}
       spec:
         containers:
         - image: docker.elastic.co/kibana/kibana@sha256:9ce1a2bf1e14697ea3ae8fe3736e8e859e03d643a53e95f911e39c0885dad4f7
           imagePullPolicy: IfNotPresent
-          name: kibana
+          securityContext:
+            privileged: true
+          name: ${IMAGE_NAME}
           ports:
           - containerPort: 5601
             protocol: TCP
@@ -129,7 +131,7 @@ objects:
         volumes:
         - configMap:
             defaultMode: 420
-            name: kibanaconfig-cm
+            name: ${KIBANACONFIGMAP}
           name: kibanaconfigvol
     test: false
     triggers:
@@ -137,11 +139,11 @@ objects:
     - imageChangeParams:
         automatic: true
         containerNames:
-        - kibana
+        - ${IMAGE_NAME}
         from:
           kind: ImageStreamTag
-          name: kibana:5.6.8
-          namespace: es-kafka
+          name: ${IMAGE_NAME}:${IMAGE_TAG}
+          namespace: ${NAMESPACE}
       type: ImageChange
   status:
     availableReplicas: 0
@@ -150,3 +152,32 @@ objects:
     replicas: 0
     unavailableReplicas: 0
     updatedReplicas: 0
+parameters:
+  - name: SERVICE_ACCOUNT
+    description: Name of service account that is able to run pods as root and use HostPath volumes for the Elastic Search application.
+    required: true
+    value: es-sa
+  - name: NAMESPACE
+    description: Name of namespace where the application runs
+    required: false
+    value: es-kafka
+  - name: APPLICATION
+    description: Name of deployed Elastic Search application.
+    required: false
+    value: kibana
+  - name: APP_DOMAIN
+    description: Name of application domain with the OCP cluster this is being deployed to.
+    required: true
+    value: apps.fd51.example.opentlc.com
+  - name: KIBANACONFIGMAP
+    description: Name of kibana.yml properties ConfigMap to overwrite defaults.
+    required: false
+    value: kibanaconfig-cm
+  - name: IMAGE_NAME
+    description: The name of image 
+    value: kibana
+    required: false
+  - name: IMAGE_TAG
+    description: The tag of the image 
+    value: 5.6.8
+    required: false
