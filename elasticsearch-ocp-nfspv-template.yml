@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: elasticsearch-ocp-nfspv-template
+objects:
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"PersistentVolume","metadata":{"annotations":{},"name":"elastic-conf-nfs-pv","namespace":""},"spec":{"accessModes":["ReadWriteMany"],"capacity":{"storage":"2Gi"},"nfs":{"path":"/exports/elastic-conf","readOnly":false,"server":"support1.fd51.internal"},"persistentVolumeReclaimPolicy":"Retain"}}
+      pv.kubernetes.io/bound-by-controller: "yes"
+    creationTimestamp: null
+    labels:
+      app: elasticsearch
+    name: elastic-conf-nfs-pv
+  spec:
+    accessModes:
+    - ReadWriteMany
+    capacity:
+      storage: 2Gi
+    claimRef:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      name: elastic-conf-nfs-pvc
+      namespace: es-kafka
+      resourceVersion: "123615"
+      uid: 48c3c128-2737-11e8-8291-0adb60544af0
+    nfs:
+      path: /exports/elastic-conf
+      server: support1.fd51.internal
+    persistentVolumeReclaimPolicy: Retain
+  status: {}
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"PersistentVolume","metadata":{"annotations":{},"name":"elastic-data-nfs-pv","namespace":""},"spec":{"accessModes":["ReadWriteMany"],"capacity":{"storage":"6Gi"},"nfs":{"path":"/exports/elastic-data","readOnly":false,"server":"support1.fd51.internal"},"persistentVolumeReclaimPolicy":"Retain"}}
+      pv.kubernetes.io/bound-by-controller: "yes"
+    creationTimestamp: null
+    labels:
+      app: elasticsearch
+    name: elastic-data-nfs-pv
+  spec:
+    accessModes:
+    - ReadWriteMany
+    capacity:
+      storage: 6Gi
+    claimRef:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      name: elastic-data-nfs-pvc
+      namespace: es-kafka
+      resourceVersion: "123574"
+      uid: 414f950e-2737-11e8-8291-0adb60544af0
+    nfs:
+      path: /exports/elastic-data
+      server: support1.fd51.internal
+    persistentVolumeReclaimPolicy: Retain
+  status: {}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    annotations:
+      pv.kubernetes.io/bind-completed: "yes"
+      pv.kubernetes.io/bound-by-controller: "yes"
+    creationTimestamp: null
+    labels:
+      app: elasticsearch
+    name: elastic-data-nfs-pvc
+  spec:
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: 6Gi
+    volumeName: elastic-data-nfs-pv
+  status: {}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    annotations:
+      pv.kubernetes.io/bind-completed: "yes"
+      pv.kubernetes.io/bound-by-controller: "yes"
+    creationTimestamp: null
+    labels:
+      app: elasticsearch
+    name: elastic-logs-nfs-pvc
+  spec:
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: 3Gi
+    volumeName: elastic-logs-nfs-pv
+  status: {}
