@@ -1,0 +1,152 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: kibana-ocp-template
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      openshift.io/image.dockerRepositoryCheck: 2018-03-21T01:20:32Z
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: kibana
+    name: kibana
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - annotations: null
+      from:
+        kind: DockerImage
+        name: docker-registry.default.svc:5000/es-kafka/kibana:5.6.8
+      generation: 1
+      importPolicy: {}
+      name: 5.6.8
+      referencePolicy:
+        type: Source
+  status:
+    dockerImageRepository: ""
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: kibana
+    name: kibana
+  spec:
+    ports:
+    - port: 5601
+      protocol: TCP
+      targetPort: 5601
+    selector:
+      app: kibana
+      deploymentconfig: kibana
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    annotations:
+      openshift.io/host.generated: "true"
+    creationTimestamp: null
+    labels:
+      app: kibana
+    name: kibana
+  spec:
+    host: kibana-es-kafka.apps.fd51.example.opentlc.com
+    to:
+      kind: Service
+      name: kibana
+      weight: 100
+    wildcardPolicy: None
+  status:
+    ingress:
+    - conditions:
+      - lastTransitionTime: 2018-03-21T01:23:20Z
+        status: "True"
+        type: Admitted
+      host: kibana-es-kafka.apps.fd51.example.opentlc.com
+      routerName: router
+      wildcardPolicy: None
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftWebConsole
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: kibana
+    name: kibana
+  spec:
+    replicas: 1
+    selector:
+      app: kibana
+      deploymentconfig: kibana
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftWebConsole
+        creationTimestamp: null
+        labels:
+          app: kibana
+          deploymentconfig: kibana
+      spec:
+        containers:
+        - image: docker.elastic.co/kibana/kibana@sha256:9ce1a2bf1e14697ea3ae8fe3736e8e859e03d643a53e95f911e39c0885dad4f7
+          imagePullPolicy: IfNotPresent
+          name: kibana
+          ports:
+          - containerPort: 5601
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /usr/share/kibana/config/kibana.yml
+            name: kibanaconfigvol
+            subPath: kibana.yml
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: kibanaconfig-cm
+          name: kibanaconfigvol
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - kibana
+        from:
+          kind: ImageStreamTag
+          name: kibana:5.6.8
+          namespace: es-kafka
+      type: ImageChange
+  status:
+    availableReplicas: 0
+    latestVersion: 0
+    observedGeneration: 0
+    replicas: 0
+    unavailableReplicas: 0
+    updatedReplicas: 0
