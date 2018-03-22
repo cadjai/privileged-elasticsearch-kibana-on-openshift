@@ -21,10 +21,10 @@ objects:
     - annotations: null
       from:
         kind: DockerImage
-        name: docker-registry.default.svc:5000/${NAMESPACE}/${IMAGE_NAME}:${IMAGE_TAG}
+        name: docker.elastic.co/kibana/${IMAGE_NAME}:${IMAGE_TAG}
       generation: 1
       importPolicy: {}
-      name: ${IMAGE_NAME}:${IMAGE_TAG}
+      name: ${IMAGE_TAG}
       referencePolicy:
         type: Source
   status:
