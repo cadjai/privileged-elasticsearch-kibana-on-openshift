@@ -1,17 +1,10 @@
 allowHostDirVolumePlugin: true
-allowHostIPC: false
+allowHostIPC: true
 allowHostNetwork: false
 allowHostPID: false
 allowHostPorts: false
 allowPrivilegedContainer: true
 allowedCapabilities:
-- FOWNER
-- CHOWN
-- SETGID
-- DACOVERRIDE
-- SETFCAP
-- SYS_MODULE
-- SYS_RESOURCE
 - IPC_LOCK
 allowedFlexVolumes: []
 apiVersion: v1
