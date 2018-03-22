@@ -127,6 +127,9 @@ objects:
               memory: 4Gi
           securityContext:
             privileged: true
+            capabilities:
+              add:
+              - IPC_LOCK
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
