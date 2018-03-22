@@ -12,8 +12,6 @@ defaultAddCapabilities: []
 fsGroup:
   type: RunAsAny
 groups:
-- system:authenticated
-- system:serviceaccounts:es-kafka
 kind: SecurityContextConstraints
 metadata:
   annotations:
